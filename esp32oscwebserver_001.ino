@@ -12,6 +12,14 @@
 #include <OSCMessage.h>
 
 
+//Pot Right is connected to this GPIO pin 
+//blue
+const int pot_1 = 34;
+
+// variable for storing Pot 1 values
+
+int potVal_1 = 0;
+
 AsyncWebServer server(80);
 
 // REPLACE WITH YOUR NETWORK CREDENTIALS
@@ -27,6 +35,19 @@ const char* PARAM_INPUT_2 = "input2";
 const char* PARAM_INPUT_3 = "input3";
 const char* PARAM_INPUT_4 = "input4";
 const char* PARAM_INPUT_5 = "input5";
+
+    String inputMessage_1;
+    String inputParam_1;
+    String inputMessage_2;
+    String inputParam_2;
+    String inputMessage_3;
+    String inputParam_3;
+    String inputMessage_4;
+    String inputParam_4;
+    String inputMessage_5;
+    String inputParam_5;
+
+
 
 // HTML web page to handle 3 input fields (input1, input2, input3)
 const char index_html[] PROGMEM = R"rawliteral(
@@ -62,6 +83,11 @@ boolean connected = false;
 WiFiUDP udp;
 
 
+
+ 
+
+
+
 void notFound(AsyncWebServerRequest *request) {
   request->send(404, "text/plain", "Not found");
 }
@@ -78,6 +104,9 @@ void setup() {
 }
 
 void loop() {
+
+pot1Status();
+
   
 }
 
@@ -122,16 +151,8 @@ void ServerRun(){
 
   // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    String inputMessage_1;
-    String inputParam_1;
-    String inputMessage_2;
-    String inputParam_2;
-    String inputMessage_3;
-    String inputParam_3;
-    String inputMessage_4;
-    String inputParam_4;
-    String inputMessage_5;
-    String inputParam_5;
+    
+
         
     // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
     if (request->hasParam(PARAM_INPUT_1)) {
@@ -190,33 +211,29 @@ request->send(200, "text/html", "HTTP GET request sent to your ESP on input fiel
                                      + inputParam_5 + ") with value: " + inputMessage_5 +
                                      "<br><a href=\"/\">Return to Home Page</a>");
 
-
-
-
-
  int ip1 = inputMessage_1.toInt();
   int ip2 = inputMessage_2.toInt();
    int ip3 = inputMessage_3.toInt();
  int ip4 = inputMessage_4.toInt();
  int portNumber = inputMessage_5.toInt();
- 
-    //IP address to send UDP data to:
-// either use the ip address of the server or 
+
+
 // a network broadcast address
  const IPAddress udpAddress(ip1, ip2, ip3, ip4);
   const int udpPort = portNumber;
 
-   //initializes the UDP state
-          //This initializes the transfer buffer
-          udp.begin(WiFi.localIP(),udpPort);
+
+   udp.begin(WiFi.localIP(),udpPort);
 
  if(connected){
 
      OSCMessage msg("/UDP successfully Connected!");
-
+//initializes the UDP state
+          //This initializes the transfer buffer
+          
     udp.beginPacket(udpAddress, udpPort);
     msg.send(udp);
-    udp.endPacket();
+   udp.endPacket();
     msg.empty();
 
   }
@@ -228,3 +245,33 @@ request->send(200, "text/html", "HTTP GET request sent to your ESP on input fiel
   server.begin();
   
   }
+
+void pot1Status(){
+
+ int ip1 = inputMessage_1.toInt();
+  int ip2 = inputMessage_2.toInt();
+   int ip3 = inputMessage_3.toInt();
+ int ip4 = inputMessage_4.toInt();
+ int portNumber = inputMessage_5.toInt();
+
+
+// a network broadcast address
+ const IPAddress udpAddress(ip1, ip2, ip3, ip4);
+  const int udpPort = portNumber;
+
+
+   udp.begin(WiFi.localIP(),udpPort);
+
+
+   potVal_1 = analogRead(pot_1);
+if(connected){
+  OSCMessage msg("/pot1");
+  msg.add((unsigned int) potVal_1);
+
+    udp.beginPacket(udpAddress, udpPort);
+    msg.send(udp);
+    udp.endPacket();
+    msg.empty();
+}
+}
+
