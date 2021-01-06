@@ -11,14 +11,67 @@
 #include <WiFiUdp.h>
 #include <OSCMessage.h>
 
+//Joystick Right is connected to these GPIO pins
+
+//orange 
+const int joyX_1 = 34;
+//yellow
+const int joyY_1 = 35;
+//green
+const int joyK_1 = 32;
 
 //Pot Right is connected to this GPIO pin 
 //blue
-const int pot_1 = 34;
+const int pot_1 = 33;
+
+//Switch Right is connected to this GPIO pin 
+//purple
+const int sw_1 = 4;
+
+//-------------------------------------------------------
+//Joystick Left is connected to these GPIO pins
+
+//orange
+const int joyX_2 = 36;
+//yellow
+const int joyY_2 = 39;
+//green
+const int joyK_2 = 25;
+
+//Pot 1 is connected to this GPIO pin
+//blue
+const int pot_2 = 32;
+
+//Pot 2 is connected to this GPIO pin
+//purple
+const int sw_2 = 2;
+// variable for storing Joystick 1 values
+
+int JoyXval_1 = 0;
+int JoyYval_1 = 0;
+int JoyKval_1 = 0;
+
+// variable for storing Joystick 2 values
+
+int JoyXval_2 = 0;
+int JoyYval_2 = 0;
+int JoyKval_2 = 0;
 
 // variable for storing Pot 1 values
 
 int potVal_1 = 0;
+
+// variable for storing Pot 2 values
+
+int potVal_2 = 0;
+
+// variable for storing sw_1 values
+
+int swVal_1 = 0;
+
+// variable for storing sw_2 values
+
+int swVal_2 = 0;
 
 AsyncWebServer server(80);
 
@@ -71,7 +124,16 @@ const char index_html[] PROGMEM = R"rawliteral(
         <br />
         <input type="submit" value="Submit">
     </form><br>
-    
+    <br>
+        <p> Left Controller </p>
+        <p> Joystick : /joy1 (2 outputs) </p>
+        <p> Potentiometer : /pot1 (1 output) </p>
+        <p> Switch : /sw1 (1 output) </p>
+      <br>
+        <p> Right Controller </p>
+        <p> Joystick : /joy2 (2 outputs) </p>
+        <p> Potentiometer : /pot2 (1 output) </p>
+        <p> Switch : /sw2 (1 output) </p>
 </body></html>)rawliteral";
 
 
@@ -105,7 +167,12 @@ void setup() {
 
 void loop() {
 
-pot1Status();
+  joy1Status();
+  pot1Status();
+  sw1Status();
+  joy2Status();
+  pot2Status();
+  sw2Status();
 
   
 }
@@ -275,3 +342,166 @@ if(connected){
 }
 }
 
+void joy1Status(){
+
+ int ip1 = inputMessage_1.toInt();
+  int ip2 = inputMessage_2.toInt();
+   int ip3 = inputMessage_3.toInt();
+ int ip4 = inputMessage_4.toInt();
+ int portNumber = inputMessage_5.toInt();
+
+
+// a network broadcast address
+ const IPAddress udpAddress(ip1, ip2, ip3, ip4);
+  const int udpPort = portNumber;
+
+
+   udp.begin(WiFi.localIP(),udpPort);
+
+
+ JoyXval_1 = analogRead(joyX_1);
+ JoyYval_1 = analogRead(joyY_1);
+ JoyKval_1 = analogRead(joyK_1);
+    if(connected){
+
+     OSCMessage msg("/joy1");
+    msg.add((unsigned int) JoyXval_1);
+    msg.add((unsigned int) JoyYval_1);
+    msg.add((unsigned int) JoyKval_1);
+
+    udp.beginPacket(udpAddress, udpPort);
+    msg.send(udp);
+    udp.endPacket();
+    msg.empty();
+
+  }
+}
+void joy2Status(){
+
+ int ip1 = inputMessage_1.toInt();
+  int ip2 = inputMessage_2.toInt();
+   int ip3 = inputMessage_3.toInt();
+ int ip4 = inputMessage_4.toInt();
+ int portNumber = inputMessage_5.toInt();
+
+
+// a network broadcast address
+ const IPAddress udpAddress(ip1, ip2, ip3, ip4);
+  const int udpPort = portNumber;
+
+
+   udp.begin(WiFi.localIP(),udpPort);
+
+
+ JoyXval_2 = analogRead(joyX_2);
+ JoyYval_2 = analogRead(joyY_2);
+ JoyKval_2 = analogRead(joyK_2);
+    if(connected){
+
+     OSCMessage msg("/joy2");
+    msg.add((unsigned int) JoyXval_2);
+    msg.add((unsigned int) JoyYval_2);
+    msg.add((unsigned int) JoyKval_2);
+
+
+    udp.beginPacket(udpAddress, udpPort);
+    msg.send(udp);
+    udp.endPacket();
+    msg.empty();
+  }
+}
+
+
+void pot2Status(){
+
+ int ip1 = inputMessage_1.toInt();
+  int ip2 = inputMessage_2.toInt();
+   int ip3 = inputMessage_3.toInt();
+ int ip4 = inputMessage_4.toInt();
+ int portNumber = inputMessage_5.toInt();
+
+
+// a network broadcast address
+ const IPAddress udpAddress(ip1, ip2, ip3, ip4);
+  const int udpPort = portNumber;
+
+
+   udp.begin(WiFi.localIP(),udpPort);
+
+  
+
+   potVal_2 = analogRead(pot_2);
+if(connected){
+  OSCMessage msg("/pot2");
+  msg.add((unsigned int) potVal_2);
+
+    udp.beginPacket(udpAddress, udpPort);
+    msg.send(udp);
+    udp.endPacket();
+    msg.empty();
+}
+
+}
+
+void sw1Status(){
+
+ int ip1 = inputMessage_1.toInt();
+  int ip2 = inputMessage_2.toInt();
+   int ip3 = inputMessage_3.toInt();
+ int ip4 = inputMessage_4.toInt();
+ int portNumber = inputMessage_5.toInt();
+
+
+// a network broadcast address
+ const IPAddress udpAddress(ip1, ip2, ip3, ip4);
+  const int udpPort = portNumber;
+
+
+   udp.begin(WiFi.localIP(),udpPort);
+
+  
+
+  swVal_1 = digitalRead(sw_1);
+if (connected){
+  OSCMessage msg("/sw1");
+  msg.add((unsigned int) swVal_1);
+
+     udp.beginPacket(udpAddress, udpPort);
+    msg.send(udp);
+    udp.endPacket();
+    msg.empty();
+}
+
+}
+void sw2Status(){
+
+ int ip1 = inputMessage_1.toInt();
+  int ip2 = inputMessage_2.toInt();
+   int ip3 = inputMessage_3.toInt();
+ int ip4 = inputMessage_4.toInt();
+ int portNumber = inputMessage_5.toInt();
+
+
+// a network broadcast address
+ const IPAddress udpAddress(ip1, ip2, ip3, ip4);
+  const int udpPort = portNumber;
+
+
+   udp.begin(WiFi.localIP(),udpPort);
+
+  
+
+  swVal_2 = digitalRead(sw_2);
+if (connected){
+  OSCMessage msg("/sw2");
+  msg.add((unsigned int) swVal_2);
+
+   udp.beginPacket(udpAddress, udpPort);
+    msg.send(udp);
+    udp.endPacket();
+    msg.empty();
+  
+}
+
+}
+  
